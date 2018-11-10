@@ -1,3 +1,4 @@
+<!-- https://github.com/lo-th/Oimo.js/blob/gh-pages/src/core/World.js -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -141,7 +142,7 @@
 
 
         //canvas.addEventListener( 'mousemove', rayTest, false);
-        setInterval(rayTest, 100);
+        //setInterval(rayTest, 100);
 
 
         // physics
@@ -201,7 +202,8 @@
         world = new OIMO.World({
             info:true, 
             worldscale:100,
-            move: true
+            move: true,
+            gravity: [0, -1.0, 0]
         });
 
         // world = new OIMO.World({ 
@@ -231,8 +233,8 @@
         bodys=[];
 
         //add ground
-        s_width = s_height = 281;
-        s_bold = 1;
+        s_bold = 10;
+        s_width = s_height = s_bold+300;
         s_h_padding = -100;
         ground0 = world.add({
             size:[s_width-s_bold, s_height-s_bold, s_bold], 
@@ -262,7 +264,8 @@
         ground4 = world.add({
             size:[s_width-s_bold, s_bold, s_height-s_bold], 
             pos:[0, 0+s_h_padding, 0], 
-            world:world
+            world:world,
+            rot:[0,10,10]
         }); //밑판
         ground5 = world.add({
             size:[s_width, s_bold, s_height], 
@@ -298,7 +301,7 @@
         addStaticBox(
             [s_width-s_bold, s_bold, s_height-s_bold], 
             [0,0+s_h_padding,0], 
-            [0,0,0]
+            [0,10,10]
         );   //밑판   
         addStaticBox(
             [s_width, s_bold, s_height], 
@@ -313,16 +316,23 @@
         while (i--){
             if(type===4) t = Math.floor(Math.random()*3)+1;
             else t = type;
-            x = -((s_width-s_bold)/2) + Math.random()*(s_width-s_bold-radius);
-            z = -((s_width-s_bold)/2) + Math.random()*(s_width-s_bold-radius);
+            x = -((s_width-s_bold)/2) + Math.random()*(s_width-s_bold-radius+s_h_padding);
             y = ((s_width-s_bold)/2) + Math.random()*(s_width-s_bold-(radius*3)+s_h_padding);
+            z = -((s_width-s_bold)/2) + Math.random()*(s_width-s_bold-radius+s_h_padding);
 
             var radius = 50;
             w = radius; //10 + Math.random()*10;
             h = radius; //10 + Math.random()*10;
             d = radius; //10 + Math.random()*10;
 
-            bodys[i] = world.add({type:'sphere', size:[w*0.5], pos:[x,y,z], move:true, world:world, restitution:1 });
+            bodys[i] = world.add({
+                type:'sphere', 
+                size:[w*0.5], 
+                pos:[x,y,z], 
+                move:true, 
+                world:world, 
+                restitution:2.33
+            });
             meshs[i] = new THREE.Mesh( geos.sphere, mats.sph );
             meshs[i].scale.set( w*0.5, w*0.5, w*0.5 );
 
@@ -418,7 +428,7 @@
     //----------------------------------
 
     function rayTest() {
-        
+
         updateOimoPhysics();
     }
 
