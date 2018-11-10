@@ -25,7 +25,7 @@
     <input type="button" value="mix" onClick=populate(4)>
     <input type="number" name="quantity" min="10" max="2000" value="400"  id='MaxNumber'> -->
     <input type="submit" onClick=populate()>
-    <input type="number" name="gravity" min="-20" max="20" value="-10" id='gravity' onChange=gravity() >
+    <input type="number" name="gravity" min="-20" max="20" value="-3.0" id='gravity' onChange=gravity() >
 </div>
 <div id='info'></div>
 <script>
@@ -203,7 +203,7 @@
             info:true, 
             worldscale:100,
             move: true,
-            gravity: [0, -1.0, 0]
+            gravity: [0, -3.0, 0]
         });
 
         // world = new OIMO.World({ 
@@ -221,6 +221,11 @@
 
     }
 
+    var s_bold = 1;
+    var s_width = s_height = s_bold+300;
+    var s_h_padding = -100;
+    var radius = 50;
+    var s_restitution = 1.8;
     function populate(n) {
 
         var max = 10;   //document.getElementById("MaxNumber").value;
@@ -240,32 +245,35 @@
             size:[s_width-s_bold, s_height-s_bold, s_bold], 
             pos:[0, ((s_width-s_bold)/2)+s_h_padding, -((s_width-s_bold)/2)], 
             world:world
-        }); //뒷판
+        }); //뒷판 - 탄성0
         ground1 = world.add({
             size:[s_width-s_bold, s_height-s_bold, s_bold], 
             pos:[0, ((s_width-s_bold)/2)+s_h_padding, ((s_width-s_bold)/2)], 
-            world:world
+            world:world, 
+                restitution:s_restitution
         }); //앞판
         ground2 = world.add({
             size:[s_bold, s_width-s_bold, s_height-s_bold], 
             pos:[-((s_width-s_bold)/2), ((s_width-s_bold)/2)+s_h_padding, 0], 
-            world:world
+            world:world, 
+                restitution:s_restitution
         }); //옆판
         ground3 = world.add({
             size:[s_bold, s_width-s_bold, s_height-s_bold], 
             pos:[((s_width-s_bold)/2), ((s_width-s_bold)/2)+s_h_padding, 0], 
             world:world
-        }); //옆판
+        }); //옆판 - 탄성0
         ground5 = world.add({
             size:[s_width-s_bold, s_bold, s_height-s_bold], 
             pos:[0,((s_width-s_bold))+s_h_padding,0], 
             world:world
-        }); //윗판
+        }); //윗판 - 탄성0
         ground4 = world.add({
             size:[s_width-s_bold, s_bold, s_height-s_bold], 
             pos:[0, 0+s_h_padding, 0], 
             world:world,
-            rot:[0,10,10]
+            rot:[0,10,10], 
+                restitution:s_restitution
         }); //밑판
         ground5 = world.add({
             size:[s_width, s_bold, s_height], 
@@ -320,7 +328,6 @@
             y = ((s_width-s_bold)/2) + Math.random()*(s_width-s_bold-(radius*3)+s_h_padding);
             z = -((s_width-s_bold)/2) + Math.random()*(s_width-s_bold-radius+s_h_padding);
 
-            var radius = 50;
             w = radius; //10 + Math.random()*10;
             h = radius; //10 + Math.random()*10;
             d = radius; //10 + Math.random()*10;
@@ -331,7 +338,7 @@
                 pos:[x,y,z], 
                 move:true, 
                 world:world, 
-                restitution:2.33
+                restitution:1.1
             });
             meshs[i] = new THREE.Mesh( geos.sphere, mats.sph );
             meshs[i].scale.set( w*0.5, w*0.5, w*0.5 );
@@ -364,9 +371,14 @@
 
                 // reset position
                 if(mesh.position.y<-100){
-                    x = -100 + Math.random()*200;
-                    z = -100 + Math.random()*200;
-                    y = 100 + Math.random()*1000;
+                    // x = -100 + Math.random()*200;
+                    // z = -100 + Math.random()*200;
+                    // y = 100 + Math.random()*1000;
+                    
+                    x = -((s_width-s_bold)/2) + Math.random()*(s_width-s_bold-radius+s_h_padding);
+                    y = ((s_width-s_bold)/2) + Math.random()*(s_width-s_bold-(radius*3)+s_h_padding);
+                    z = -((s_width-s_bold)/2) + Math.random()*(s_width-s_bold-radius+s_h_padding);
+
                     body.resetPosition(x,y,z);
                 }
             } else {
