@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<title>Oimo.js Basic</title>
+<title>추첨!</title>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 <meta http-equiv="X-UA-Compatible" content="IE=11" />
@@ -19,10 +19,10 @@
 <canvas id="canvas"></canvas>
 <div id='interface'>
     <input type="button" value="sphere" onClick=populate(1)>
-    <input type="button" value="box" onClick=populate(2)>
+    <!-- <input type="button" value="box" onClick=populate(2)>
     <input type="button" value="cylinder" onClick=populate(3)>
     <input type="button" value="mix" onClick=populate(4)>
-    <input type="number" name="quantity" min="10" max="2000" value="400"  id='MaxNumber'>
+    <input type="number" name="quantity" min="10" max="2000" value="400"  id='MaxNumber'> -->
     <input type="submit" onClick=populate()>
     <input type="number" name="gravity" min="-20" max="20" value="-10" id='gravity' onChange=gravity() >
 </div>
@@ -254,16 +254,21 @@
             pos:[((s_width-s_bold)/2), ((s_width-s_bold)/2)+s_h_padding, 0], 
             world:world
         }); //옆판
+        ground5 = world.add({
+            size:[s_width-s_bold, s_bold, s_height-s_bold], 
+            pos:[0,((s_width-s_bold))+s_h_padding,0], 
+            world:world
+        }); //윗판
         ground4 = world.add({
             size:[s_width-s_bold, s_bold, s_height-s_bold], 
             pos:[0, 0+s_h_padding, 0], 
             world:world
         }); //밑판
         ground5 = world.add({
-            size:[s_width-s_bold, s_bold, s_height-s_bold], 
-            pos:[0,((s_width-s_bold))+s_h_padding,0], 
+            size:[s_width, s_bold, s_height], 
+            pos:[0, 0+s_h_padding+s_h_padding, 0], 
             world:world
-        }); //윗판
+        }); //완전땅바닥
 
         addStaticBox(
             [s_width-s_bold, s_height-s_bold, s_bold], 
@@ -284,17 +289,22 @@
             [s_bold, s_width-s_bold, s_height-s_bold], 
             [((s_width-s_bold)/2), ((s_width-s_bold)/2)+s_h_padding, 0], 
             [0,0,0]
-        );  //옆판        
-        addStaticBox(
-            [s_width-s_bold, s_bold, s_height-s_bold], 
-            [0,0+s_h_padding,0], 
-            [0,0,0]
-        );   //밑판        
+        );  //옆판       
         addStaticBox(
             [s_width-s_bold, s_bold, s_height-s_bold], 
             [0,((s_width-s_bold))+s_h_padding,0], 
             [0,0,0]
-        );   //윗판
+        );   //윗판      
+        addStaticBox(
+            [s_width-s_bold, s_bold, s_height-s_bold], 
+            [0,0+s_h_padding,0], 
+            [0,0,0]
+        );   //밑판   
+        addStaticBox(
+            [s_width, s_bold, s_height], 
+            [0,0+s_h_padding+s_h_padding,0], 
+            [0,0,0]
+        );   //완전 땅바닥  
 
         //add object
         var x, y, z, w, h, d;
@@ -322,29 +332,6 @@
             scene.add( meshs[i] );
         }
 
-
-        // var j = 200;
-        // while (j--){
-        //     if(type===4) t = Math.floor(Math.random()*3)+1;
-        //     else t = type;
-        //     x = -((s_width-s_bold)/2) + Math.random()*(s_width-s_bold-radius-50);
-        //     z = -((s_width-s_bold)/2) + Math.random()*(s_width-s_bold-radius-50);
-        //     y = ((s_width-s_bold)/2) + Math.random()*(s_width-s_bold-200);
-
-        //     var radius = 20;
-        //     w = radius; //10 + Math.random()*10;
-        //     h = radius; //10 + Math.random()*10;
-        //     d = radius; //10 + Math.random()*10;
-
-        //     bodys[max+j] = world.add({type:'sphere', size:[w*0.5], pos:[x,y,z], move:true, world:world});
-        //     meshs[max+j] = new THREE.Mesh( geos.sphere, mats.sph );
-        //     meshs[max+j].scale.set( w*0.5, w*0.5, w*0.5 );
-
-        //     meshs[max+j].castShadow = false;
-        //     meshs[max+j].receiveShadow = false;
-
-        //     scene.add( meshs[max+j] );
-        // }
     }
 
     function updateOimoPhysics() {
@@ -352,16 +339,6 @@
 
         world.step();
 
-        // // apply new position on last rigidbody
-        // bodys[bodys.length-1].setPosition(paddel.position);
-
-        // paddel.lookAt(new THREE.Vector3(100,paddel.position.y, 0));
-        // paddel.rotation.y += 90*ToRad;
-
-        // // apply new rotation on last rigidbody
-        // bodys[bodys.length-1].setQuaternion(paddel.quaternion);
-
-        
         var x, y, z, mesh, body, i = bodys.length;
 
         while (i--){
@@ -441,28 +418,7 @@
     //----------------------------------
 
     function rayTest() {
-        // mouse.x = ( e.clientX / window.innerWidth ) * 2 - 1;
-        // mouse.y = - ( e.clientY / window.innerHeight ) * 2 + 1;
         
-        // mouse.x = Math.random()*s_width -(ground4.position.x);
-        // mouse.y = Math.random()*s_width -(ground4.position.y);
-
-        // console.log(mouse);
-
-        // ray.setFromCamera( mouse, camera );
-        // var intersects = ray.intersectObjects( grounds, true );
-        // if ( intersects.length) {
-        //     paddel.position.copy( intersects[0].point.add(new THREE.Vector3( 0, 20, 0 )) );
-
-
-        //     updateOimoPhysics();
-        // }
-
-
-        // meshs[0].position.x	= Math.random()*(s_width-s_bold)-100;
-        // meshs[0].position.y	= Math.random()*(s_width-s_bold)-100;
-        // meshs[0].position.z	= Math.random()*(s_width-s_bold)-100;
-
         updateOimoPhysics();
     }
 
