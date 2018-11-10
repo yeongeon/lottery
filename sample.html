@@ -43,6 +43,16 @@
     var geos = {};
     var mats = {};
 
+    var ray, mouse;
+    var paddel;
+
+    var ground0;
+    var ground1;
+    var ground2;
+    var ground3;
+    var ground4;
+    var ground5;
+
     //oimo var
     var world = null;
     var bodys = [];
@@ -71,6 +81,9 @@
         controls.target.set(0, 20, 0);
         controls.update();
 
+        ray = new THREE.Raycaster();
+        mouse = new THREE.Vector2();
+
         scene = new THREE.Scene();
 
         renderer = new THREE.WebGLRenderer({ canvas:canvas, precision: "mediump", antialias:antialias });
@@ -81,7 +94,7 @@
         if(!isMobile){
 
             scene.add( new THREE.AmbientLight( 0x3D4143 ) );
-            light = new THREE.DirectionalLight( 0xffffff , 1.4);
+            light = new THREE.DirectionalLight( 0xffffff , 2.0);
             light.position.set( 300, 1000, 500 );
             light.target.position.set( 0, 0, 0 );
             light.castShadow = true;
@@ -120,9 +133,16 @@
         mats['scyl']   = new THREE[materialType]( {shininess: 10, map: basicTexture(5), name:'scyl' } );
         mats['ground'] = new THREE[materialType]( {shininess: 10, color:0x3D4143, transparent:true, opacity:0.5 } );
 
+        paddel = new THREE.Object3D();
+
         // events
 
         window.addEventListener( 'resize', onWindowResize, false );
+
+
+        //canvas.addEventListener( 'mousemove', rayTest, false);
+        setInterval(rayTest, 100);
+
 
         // physics
 
@@ -180,7 +200,8 @@
 
         world = new OIMO.World({
             info:true, 
-            worldscale:100
+            worldscale:100,
+            move: true
         });
 
         // world = new OIMO.World({ 
@@ -212,19 +233,68 @@
         //add ground
         s_width = s_height = 281;
         s_bold = 1;
-        var ground0 = world.add({size:[s_width-s_bold, s_height-s_bold, s_bold], pos:[0, ((s_width-s_bold)/2), -((s_width-s_bold)/2)], world:world}); //뒷판
-        var ground1 = world.add({size:[s_width-s_bold, s_height-s_bold, s_bold], pos:[0, ((s_width-s_bold)/2), ((s_width-s_bold)/2)], world:world}); //앞판
-        var ground2 = world.add({size:[s_bold, s_width-s_bold, s_height-s_bold], pos:[-((s_width-s_bold)/2), ((s_width-s_bold)/2), 0], world:world});  //옆판
-        var ground3 = world.add({size:[s_bold, s_width-s_bold, s_height-s_bold], pos:[((s_width-s_bold)/2), ((s_width-s_bold)/2), 0], world:world});   //옆판
-        var ground4 = world.add({size:[s_width-s_bold, s_bold, s_height-s_bold], pos:[0, 0, 0], world:world});   //밑판
-        var ground4 = world.add({size:[s_width-s_bold, s_bold, s_height-s_bold], pos:[0,((s_width-s_bold)),0], world:world});   //윗판
+        s_h_padding = -100;
+        ground0 = world.add({
+            size:[s_width-s_bold, s_height-s_bold, s_bold], 
+            pos:[0, ((s_width-s_bold)/2)+s_h_padding, -((s_width-s_bold)/2)], 
+            world:world
+        }); //뒷판
+        ground1 = world.add({
+            size:[s_width-s_bold, s_height-s_bold, s_bold], 
+            pos:[0, ((s_width-s_bold)/2)+s_h_padding, ((s_width-s_bold)/2)], 
+            world:world
+        }); //앞판
+        ground2 = world.add({
+            size:[s_bold, s_width-s_bold, s_height-s_bold], 
+            pos:[-((s_width-s_bold)/2), ((s_width-s_bold)/2)+s_h_padding, 0], 
+            world:world
+        }); //옆판
+        ground3 = world.add({
+            size:[s_bold, s_width-s_bold, s_height-s_bold], 
+            pos:[((s_width-s_bold)/2), ((s_width-s_bold)/2)+s_h_padding, 0], 
+            world:world
+        }); //옆판
+        ground4 = world.add({
+            size:[s_width-s_bold, s_bold, s_height-s_bold], 
+            pos:[0, 0+s_h_padding, 0], 
+            world:world
+        }); //밑판
+        ground5 = world.add({
+            size:[s_width-s_bold, s_bold, s_height-s_bold], 
+            pos:[0,((s_width-s_bold))+s_h_padding,0], 
+            world:world
+        }); //윗판
 
-        addStaticBox([s_width-s_bold, s_height-s_bold, s_bold], [0, ((s_width-s_bold)/2), -((s_width-s_bold)/2)], [0,0,0]); //뒷판
-        addStaticBox([s_width-s_bold, s_height-s_bold, s_bold], [0, ((s_width-s_bold)/2), ((s_width-s_bold)/2)], [0,0,0]);  //앞판        
-        addStaticBox([s_bold, s_width-s_bold, s_height-s_bold], [-((s_width-s_bold)/2), ((s_width-s_bold)/2), 0], [0,0,0]); //옆판
-        addStaticBox([s_bold, s_width-s_bold, s_height-s_bold], [((s_width-s_bold)/2), ((s_width-s_bold)/2), 0], [0,0,0]);  //옆판        
-        addStaticBox([s_width-s_bold, s_bold, s_height-s_bold], [0,0,0], [0,0,0]);   //밑판        
-        addStaticBox([s_width-s_bold, s_bold, s_height-s_bold], [0,((s_width-s_bold)),0], [0,0,0]);   //윗판
+        addStaticBox(
+            [s_width-s_bold, s_height-s_bold, s_bold], 
+            [0, ((s_width-s_bold)/2)+s_h_padding, -((s_width-s_bold)/2)], 
+            [0,0,0]
+        );  //뒷판
+        addStaticBox(
+            [s_width-s_bold, s_height-s_bold, s_bold], 
+            [0, ((s_width-s_bold)/2)+s_h_padding, ((s_width-s_bold)/2)], 
+            [0,0,0]
+        );  //앞판        
+        addStaticBox(
+            [s_bold, s_width-s_bold, s_height-s_bold], 
+            [-((s_width-s_bold)/2), ((s_width-s_bold)/2)+s_h_padding, 0], 
+            [0,0,0]
+        );  //옆판
+        addStaticBox(
+            [s_bold, s_width-s_bold, s_height-s_bold], 
+            [((s_width-s_bold)/2), ((s_width-s_bold)/2)+s_h_padding, 0], 
+            [0,0,0]
+        );  //옆판        
+        addStaticBox(
+            [s_width-s_bold, s_bold, s_height-s_bold], 
+            [0,0+s_h_padding,0], 
+            [0,0,0]
+        );   //밑판        
+        addStaticBox(
+            [s_width-s_bold, s_bold, s_height-s_bold], 
+            [0,((s_width-s_bold))+s_h_padding,0], 
+            [0,0,0]
+        );   //윗판
 
         //add object
         var x, y, z, w, h, d;
@@ -235,7 +305,7 @@
             else t = type;
             x = -((s_width-s_bold)/2) + Math.random()*(s_width-s_bold-radius);
             z = -((s_width-s_bold)/2) + Math.random()*(s_width-s_bold-radius);
-            y = ((s_width-s_bold)/2) + Math.random()*(s_width-s_bold-(radius*3));
+            y = ((s_width-s_bold)/2) + Math.random()*(s_width-s_bold-(radius*3)+s_h_padding);
 
             var radius = 50;
             w = radius; //10 + Math.random()*10;
@@ -253,7 +323,7 @@
         }
 
 
-        // var j = 100;
+        // var j = 200;
         // while (j--){
         //     if(type===4) t = Math.floor(Math.random()*3)+1;
         //     else t = type;
@@ -266,14 +336,14 @@
         //     h = radius; //10 + Math.random()*10;
         //     d = radius; //10 + Math.random()*10;
 
-        //     bodys[j] = world.add({type:'sphere', size:[w*0.5], pos:[x,y,z], move:true, world:world});
-        //     meshs[j] = new THREE.Mesh( geos.sphere, mats.sph );
-        //     meshs[j].scale.set( w*0.5, w*0.5, w*0.5 );
+        //     bodys[max+j] = world.add({type:'sphere', size:[w*0.5], pos:[x,y,z], move:true, world:world});
+        //     meshs[max+j] = new THREE.Mesh( geos.sphere, mats.sph );
+        //     meshs[max+j].scale.set( w*0.5, w*0.5, w*0.5 );
 
-        //     meshs[j].castShadow = true;
-        //     meshs[j].receiveShadow = true;
+        //     meshs[max+j].castShadow = false;
+        //     meshs[max+j].receiveShadow = false;
 
-        //     scene.add( meshs[j] );
+        //     scene.add( meshs[max+j] );
         // }
     }
 
@@ -282,6 +352,16 @@
 
         world.step();
 
+        // // apply new position on last rigidbody
+        // bodys[bodys.length-1].setPosition(paddel.position);
+
+        // paddel.lookAt(new THREE.Vector3(100,paddel.position.y, 0));
+        // paddel.rotation.y += 90*ToRad;
+
+        // // apply new rotation on last rigidbody
+        // bodys[bodys.length-1].setQuaternion(paddel.quaternion);
+
+        
         var x, y, z, mesh, body, i = bodys.length;
 
         while (i--){
@@ -354,6 +434,36 @@
         var tx = new THREE.Texture(canvas);
         tx.needsUpdate = true;
         return tx;
+    }
+    
+    //----------------------------------
+    //  RAY TEST
+    //----------------------------------
+
+    function rayTest() {
+        // mouse.x = ( e.clientX / window.innerWidth ) * 2 - 1;
+        // mouse.y = - ( e.clientY / window.innerHeight ) * 2 + 1;
+        
+        // mouse.x = Math.random()*s_width -(ground4.position.x);
+        // mouse.y = Math.random()*s_width -(ground4.position.y);
+
+        // console.log(mouse);
+
+        // ray.setFromCamera( mouse, camera );
+        // var intersects = ray.intersectObjects( grounds, true );
+        // if ( intersects.length) {
+        //     paddel.position.copy( intersects[0].point.add(new THREE.Vector3( 0, 20, 0 )) );
+
+
+        //     updateOimoPhysics();
+        // }
+
+
+        // meshs[0].position.x	= Math.random()*(s_width-s_bold)-100;
+        // meshs[0].position.y	= Math.random()*(s_width-s_bold)-100;
+        // meshs[0].position.z	= Math.random()*(s_width-s_bold)-100;
+
+        updateOimoPhysics();
     }
 
 </script>
